@@ -1,5 +1,6 @@
 const express = require("express")
 const morgan = require("morgan")
+const http = require("http")
 const { workEnd, workStart } = require("./slackSlashbot")
 
 const PORT = process.env.PORT || 5000
@@ -21,3 +22,7 @@ app.listen(PORT, () =>
             : `http://localhost:${PORT}`
     )
 )
+
+setInterval(() => {
+    http.get("https://early-slack.herokuapp.com/")
+}, 1800000)
