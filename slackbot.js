@@ -1,6 +1,6 @@
-const config = require("dotenv").config().parsed
+const config = require("dotenv").config()
 const { RTMClient } = require("@slack/client")
-const token = config.SLACK_TOKEN
+const token = process.env.SLACK_TOKEN
 const rtm = new RTMClient(token)
 
 async function sendByWorking() {
