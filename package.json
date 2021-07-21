@@ -1,0 +1,29 @@
+{
+    "name": "early21-slack",
+    "version": "0.0.1",
+    "description": "얼리21의 슬랙 앱",
+    "engines": {
+        "node": "14.x"
+    },
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "test": "node test.js"
+    },
+    "dependencies": {
+        "express": "^4.15.2"
+    },
+    "devDependencies": {
+        "got": "^11.3.0",
+        "tape": "^4.7.0"
+    },
+    "repository": {
+        "type": "git"
+    },
+    "keywords": [
+        "node",
+        "heroku",
+        "express"
+    ],
+    "license": "MIT"
+}
