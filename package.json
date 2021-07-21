@@ -7,11 +7,15 @@
     },
     "main": "index.js",
     "scripts": {
+        "dev": "nodemon -w index.js",
         "start": "node index.js",
         "test": "node test.js"
     },
     "dependencies": {
-        "express": "^4.15.2"
+        "@slack/client": "5.0.2",
+        "dotenv": "10.0.0",
+        "express": "^4.15.2",
+        "nodemon": "2.0.12"
     },
     "devDependencies": {
         "got": "^11.3.0",
