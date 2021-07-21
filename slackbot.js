@@ -15,8 +15,10 @@ async function sendByWorking() {
 
         const channel = event.channel
         const date = getKtime()
-        const hours = date.getHours()
-        const minutes = date.getMinutes()
+        const hours =
+            date.getHours() < 10 ? `0${date.getHours()}` : date.getHours()
+        const minutes =
+            date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes()
 
         if (text === "!출근") {
             return await rtm.sendMessage(
