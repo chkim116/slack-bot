@@ -1,6 +1,7 @@
 const { hours, minutes } = require("./utils/kTime")
+const axios = require("axios")
 
-function workStart(req, res) {
+async function workStart(req, res) {
     const { user_name } = req.body
 
     const startWork = `${hours}시 ${minutes}분 출근 하위^^ `
@@ -8,25 +9,39 @@ function workStart(req, res) {
     if (!user_name) {
         return
     }
-    return res.send({
-        //  response_type: "in_channel" 메세지 추가
-        replace_original: "true", // 메세지 업데이트
-        text: startWork,
-    })
+    try {
+        await axios
+            .post(response_url, {
+                response_type: "in_channel",
+                delete_original: "true",
+                text: startWork,
+            })
+            .catch((err) => console.log(err))
+    } catch (err) {
+        console.log(err)
+        return res.send({ text: err.response.message || err.message })
+    }
 }
 
-function workEnd(req, res) {
-    const { user_name } = req.body
-
+async function workEnd(req, res) {
+    const { user_name, response_url } = req.body
     const startWork = `${hours}시 ${minutes}분 퇴근 숙오^^`
 
     if (!user_name) {
         return
     }
-    return res.send({
-        replace_original: "true", // 메세지 업데이트
-        text: startWork,
-    })
+    try {
+        await axios
+            .post(response_url, {
+                response_type: "in_channel",
+                delete_original: "true",
+                text: startWork,
+            })
+            .catch((err) => console.log(err))
+    } catch (err) {
+        console.log(err)
+        return res.send({ text: err.response.message || err.message })
+    }
 }
 
 module.exports = {
