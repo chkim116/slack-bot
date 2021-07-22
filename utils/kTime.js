@@ -4,13 +4,15 @@ const getKtime = () => {
     return new Date(timestamp)
 }
 
-const date = getKtime()
-const hours = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours()
-const minutes =
-    date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes()
+function getTime() {
+    const date = getKtime()
+    const hours = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours()
+    const minutes =
+        date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes()
+
+    return { hours, minutes }
+}
 
 module.exports = {
-    getKtime,
-    hours,
-    minutes,
+    getTime,
 }
