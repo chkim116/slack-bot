@@ -4,7 +4,7 @@ const dotenv = require("dotenv")
 dotenv.config()
 
 async function workStart(req, res) {
-    const { user_id: userId } = req.body
+    const { user_id: userId, response_url, user_name } = req.body
     const { hours, minutes } = getTime()
     const startWork = `${hours}시 ${minutes}분 출근 하위^^ `
 
