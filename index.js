@@ -18,7 +18,7 @@ app.post("/slack/work/start", workStart)
 app.post("/slack/work/end", workEnd)
 
 app.get("/kw/rank", (req, res) => {
-    return res.status(200).json(trend)
+    return res.status(200).send(trend)
 })
 
 app.get("/", (req, res) => res.send("이곳은 얼리21의 슬랙 앱입니다."))
