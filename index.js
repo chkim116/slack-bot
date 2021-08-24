@@ -31,7 +31,7 @@ app.listen(PORT, () =>
     )
 )
 
-cron.schedule("0 0 6 * * *", function () {
+cron.schedule("0 20 22 * * *", function () {
     bestKeywordCrawling(periodSettings[0])
 })
 
