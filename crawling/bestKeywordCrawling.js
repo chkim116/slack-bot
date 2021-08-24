@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer")
 const fs = require("fs")
 const { getKeywordInfo } = require("./getKeywordInfo")
 const { launchNaver } = require("./launchNaver")
+
 const pageWithoutAssets = async (page) => {
     await page.setRequestInterception(true)
 
