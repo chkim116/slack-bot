@@ -1,7 +1,11 @@
 const express = require("express")
 const morgan = require("morgan")
 const http = require("http")
+const cron = require("node-cron")
 const { workEnd, workStart } = require("./slackSlashbot")
+const { bestKeywordCrawling } = require("./crawling/bestKeywordCrawling")
+const { periodSettings } = require("./crawling/_trend")
+const trend = require("./lib/trend.json")
 
 const PORT = process.env.PORT || 5000
 const app = express()
@@ -13,6 +17,10 @@ app.use(morgan("dev"))
 app.post("/slack/work/start", workStart)
 app.post("/slack/work/end", workEnd)
 
+app.get("/kw/rank", (req, res) => {
+    return res.status(200).json(trend)
+})
+
 app.get("/", (req, res) => res.send("이곳은 얼리21의 슬랙 앱입니다."))
 
 app.listen(PORT, () =>
@@ -22,6 +30,10 @@ app.listen(PORT, () =>
             : `http://localhost:${PORT}`
     )
 )
+
+cron.schedule("0 0 6 * * *", function () {
+    bestKeywordCrawling(periodSettings[0])
+})
 
 setInterval(() => {
     http.get("https://early-slack.herokuapp.com/")
