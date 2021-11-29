@@ -95,30 +95,6 @@ const scrapLaunch = async () => {
 
                 await sleep(1000);
 
-                await sleep(100);
-
-                const extractTable = await page.evaluate(() => {
-                    const keywordTable = document.querySelectorAll(
-                        "#datatable > tbody > tr"
-                    );
-
-                    let res = [];
-                    for (const tr of keywordTable) {
-                        const extract = tr.innerText.split("\t");
-                        const obj = {
-                            keyword: extract[0],
-                            comp: extract[1],
-                            cvr: extract[2],
-                            bid: extract[3],
-                            searchCnt: extract[4],
-                            prodCnt: extract[5],
-                            prodPrcAvg: extract[6],
-                        };
-                        res.push(obj);
-                    }
-                    return res;
-                });
-
                 // 카테고리 이름 출력
                 let categoryNm = await page.evaluate(() => {
                     const firstCrumb = document.querySelector(
@@ -135,9 +111,36 @@ const scrapLaunch = async () => {
 
                     return breadCrumb;
                 });
+
+                const extractTable = await page.evaluate(() => {
+                    const keywordTable = document.querySelectorAll(
+                        "#datatable > tbody > tr"
+                    );
+
+                    let table = [];
+                    for (const tr of keywordTable) {
+                        const extract = tr.innerText.split("\t");
+                        const obj = {
+                            categoryNm,
+                            keyword: extract[0],
+                            comp: extract[1],
+                            cvr: extract[2],
+                            bid: extract[3],
+                            searchCnt: extract[4],
+                            prodCnt: extract[5],
+                            prodPrcAvg: extract[6],
+                        };
+                        table.push(obj);
+                    }
+                    return table;
+                });
+
                 console.log(`${categoryNm} 추출 완료`);
 
-                res.push({ categoryNm, keywords: extractTable });
+                res.push({
+                    categoryNm: categoryNm.split(">")[0],
+                    keywords: extractTable,
+                });
             }
         }
     } catch (err) {
@@ -146,7 +149,6 @@ const scrapLaunch = async () => {
         fs.writeFile("./lib/kw.json", JSON.stringify(res), function (err) {
             if (err) {
                 console.log("에러발생");
-                console.dir(err);
                 return;
             }
         });
@@ -157,3 +159,5 @@ const scrapLaunch = async () => {
 module.exports = {
     scrapLaunch,
 };
+
+scrapLaunch();
