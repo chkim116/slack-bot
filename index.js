@@ -1,27 +1,33 @@
-const express = require("express")
-const morgan = require("morgan")
-const http = require("http")
-const cron = require("node-cron")
-const { workEnd, workStart } = require("./slackSlashbot")
-const { bestKeywordCrawling } = require("./crawling/bestKeywordCrawling")
-const { periodSettings } = require("./crawling/_trend")
-const trend = require("./lib/trend.json")
+const express = require("express");
+const morgan = require("morgan");
+const http = require("http");
+const cron = require("node-cron");
+const { workEnd, workStart } = require("./slackSlashbot");
+const { scrapLaunch } = require("./scrap");
+const fs = require("fs");
+const cors = require("cors");
 
-const PORT = process.env.PORT || 5000
-const app = express()
+const PORT = process.env.PORT || 5000;
+const app = express();
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(morgan("dev"))
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
+app.use(
+    cors({
+        origin:
+            process.env.NODE_ENV === "production" ? "https://early21.com" : "*",
+    })
+);
 
-app.post("/slack/work/start", workStart)
-app.post("/slack/work/end", workEnd)
-
-app.get("/kw/rank", (req, res) => {
-    return res.status(200).send(trend)
-})
-
-app.get("/", (req, res) => res.send("이곳은 얼리21의 슬랙 앱입니다."))
+app.post("/slack/work/start", workStart);
+app.post("/slack/work/end", workEnd);
+app.get("/kw", (req, res) => {
+    const json = fs.readFileSync("./lib/kw.json", "utf-8");
+    const data = JSON.parse(json);
+    res.status(200).send(data);
+});
+app.get("/", (req, res) => res.send("이곳은 얼리21의 슬랙 앱입니다."));
 
 app.listen(PORT, () =>
     console.log(
@@ -29,12 +35,12 @@ app.listen(PORT, () =>
             ? `Listening on ${PORT}`
             : `http://localhost:${PORT}`
     )
-)
+);
 
 cron.schedule("0 30 22 * * *", function () {
-    bestKeywordCrawling(periodSettings[0])
-})
+    scrapLaunch();
+});
 
 setInterval(() => {
-    http.get("https://early-slack.herokuapp.com/")
-}, 1800000)
+    http.get("https://early-slack.herokuapp.com/");
+}, 1_800_000);
