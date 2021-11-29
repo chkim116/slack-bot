@@ -121,7 +121,7 @@ const scrapLaunch = async () => {
                     for (const tr of keywordTable) {
                         const extract = tr.innerText.split("\t");
                         const obj = {
-                            categoryNm,
+                            categoryNm: categoryNm.split(">")[1],
                             keyword: extract[0],
                             comp: extract[1],
                             cvr: extract[2],
@@ -159,5 +159,3 @@ const scrapLaunch = async () => {
 module.exports = {
     scrapLaunch,
 };
-
-scrapLaunch();
