@@ -16,7 +16,10 @@ app.use(morgan("dev"));
 app.use(
     cors({
         origin:
-            process.env.ORIGIN === "production" ? "https://early21.com" : "*",
+            process.env.ORIGIN === "production"
+                ? "https://early21.com/"
+                : "http://localhost:3000/",
+        credentials: true,
     })
 );
 
