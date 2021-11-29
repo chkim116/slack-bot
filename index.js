@@ -17,8 +17,8 @@ app.use(
     cors({
         origin:
             process.env.ORIGIN === "production"
-                ? "https://early21.com/"
-                : "http://localhost:3000/",
+                ? "https://early21.com"
+                : "http://localhost:3000",
         credentials: true,
     })
 );
