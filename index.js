@@ -16,7 +16,7 @@ app.use(morgan("dev"));
 app.use(
     cors({
         origin:
-            process.env.NODE_ENV === "production" ? "https://early21.com" : "*",
+            process.env.ORIGIN === "production" ? "https://early21.com" : "*",
     })
 );
 
