@@ -86,7 +86,7 @@ const extractKwTable = async (page) => {
 
 const scrapLaunch = async () => {
     const TARGET_URL = "https://pandarank.net/search";
-    const res = [];
+    let res = [];
 
     const pageWithoutAssets = async (page) => {
         await page.setRequestInterception(true);
@@ -108,7 +108,6 @@ const scrapLaunch = async () => {
     const page = await browser.newPage();
     await pageWithoutAssets(page);
 
-    let scrapTime = 0;
     try {
         const startTime = new Date().getTime();
         console.time("크롤 시간 측정");
@@ -156,7 +155,7 @@ const scrapLaunch = async () => {
             await sleep(100);
             console.log(`${firstCate} 추출 완료`);
 
-            res.push(keywords);
+            res = [...res, keywords[0]];
 
             // 2차 카테고리 선택 후 크롤
             categoryTwoLen = await page.evaluate(() => {
@@ -176,41 +175,32 @@ const scrapLaunch = async () => {
                 const keywords = await extractKwTable(page);
                 console.log(`${firstCate} > ${secondCate} 추출 완료`);
 
-                res.push(keywords);
+                res = [...res, keywords[0]];
             }
         }
         console.timeEnd("크롤 시간 측정");
         const endTime = new Date().getTime();
 
-        new Promise(() => {
-            fs.writeFile(
-                "./lib/kw.json",
-                JSON.stringify({
-                    date: new Date().toLocaleDateString(),
-                    res: res[0],
-                }),
-                function (err) {
-                    if (err) {
-                        console.log("에러발생");
-                        throw new Error("올바르게 파일을 생성하지 못했습니다.");
-                    }
+        fs.writeFile(
+            "./lib/kw.json",
+            JSON.stringify({
+                date: new Date().toLocaleDateString(),
+                res,
+            }),
+            function (err) {
+                if (err) {
+                    console.log("에러발생");
+                    throw new Error("올바르게 파일을 생성하지 못했습니다.");
                 }
-            );
-        })
-            .then(() => {
-                postSlackMessage(
-                    "개발",
-                    `${new Date().toLocaleDateString()}자 황금 키워드 추출 완료 ${
-                        (endTime - startTime) / 1000
-                    }초 소요`
-                );
-            })
-            .catch(() => {
-                postSlackMessage(
-                    "개발",
-                    `${new Date().toLocaleDateString()}자 황금 키워드 추출 실패 `
-                );
-            });
+            }
+        );
+        postSlackMessage(
+            "개발",
+            `${new Date().toLocaleDateString()}자 황금 키워드 추출 완료 ${(
+                (endTime - startTime) /
+                1000
+            ).toFixed()}초 소요`
+        );
     } catch (err) {
         console.log(err);
         postSlackMessage(
@@ -225,3 +215,5 @@ const scrapLaunch = async () => {
 module.exports = {
     scrapLaunch,
 };
+
+scrapLaunch();
