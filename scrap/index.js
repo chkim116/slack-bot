@@ -166,22 +166,26 @@ const scrapLaunch = async () => {
 
             const firstCate = await extractFirstCateNm(page);
             const keywords = await extractKwTable(page);
+            console.log(`${firstCate} - ${keywords.length}개 추출 완료`);
             await sleep(100);
 
             await newKwList(page);
             await sleep(1000);
             const newKeywords = await extractKwTable(page);
             await sleep(100);
+            console.log(
+                `황금키워드 ${keywords.length}개 중 ${newKeywords.length}개는 전날 없었습니다.`
+            );
 
             res = [
                 ...res,
-                keywords.map((lst) => {
+                ...keywords.map((lst) => {
                     if (newKeywords.find((kw) => kw.keyword === lst.keyword)) {
                         return { ...lst, isNew: true };
                     } else {
                         return { ...lst, isNew: false };
                     }
-                })[0],
+                }),
             ];
 
             // 누른 필터 삭제
@@ -203,7 +207,9 @@ const scrapLaunch = async () => {
 
                 const secondCate = await extractSecondCateNm(page);
                 const keywords = await extractKwTable(page);
-                console.log(`${firstCate} > ${secondCate} 추출 완료`);
+                console.log(
+                    `${firstCate} > ${secondCate} - ${keywords.length}개 추출 완료`
+                );
 
                 // 필터 다시 누름
                 await newKwList(page);
@@ -211,9 +217,13 @@ const scrapLaunch = async () => {
                 const newKeywords = await extractKwTable(page);
                 await sleep(100);
 
+                console.log(
+                    `황금키워드 ${keywords.length}개 중 ${newKeywords.length}개는 전날 없었습니다.`
+                );
+
                 res = [
                     ...res,
-                    keywords.map((lst) => {
+                    ...keywords.map((lst) => {
                         if (
                             newKeywords.find((kw) => kw.keyword === lst.keyword)
                         ) {
@@ -221,7 +231,7 @@ const scrapLaunch = async () => {
                         } else {
                             return { ...lst, isNew: false };
                         }
-                    })[0],
+                    }),
                 ];
 
                 // 눌려있던 필터 삭제

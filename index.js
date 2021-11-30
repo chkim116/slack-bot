@@ -4,7 +4,6 @@ const http = require("http");
 const cron = require("node-cron");
 const { workEnd, workStart } = require("./slackSlashbot");
 const { scrapLaunch } = require("./scrap");
-const fs = require("fs");
 const cors = require("cors");
 
 const PORT = process.env.PORT || 5000;
@@ -26,8 +25,7 @@ app.use(
 app.post("/slack/work/start", workStart);
 app.post("/slack/work/end", workEnd);
 app.get("/kw", (req, res) => {
-    const json = fs.readFileSync("./lib/kw.json", "utf-8");
-    const data = JSON.parse(json);
+    const ja = require("./lib/kw.json");
     res.status(200).send(data);
 });
 app.get("/", (req, res) => res.send("이곳은 얼리21의 슬랙 앱입니다."));
