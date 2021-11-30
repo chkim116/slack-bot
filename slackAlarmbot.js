@@ -26,7 +26,6 @@ async function postSlackMessage(channelName, text) {
                 channel: channelId,
                 text,
             });
-            console.log(res);
         }
     } catch (error) {
         console.error(error);

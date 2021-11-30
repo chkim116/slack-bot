@@ -45,5 +45,5 @@ cron.schedule("0 30 22 * * *", function () {
 });
 
 setInterval(() => {
-    http.get("https://early-slack.herokuapp.com/");
+    http.get("http://early-slack.herokuapp.com/");
 }, 1_800_000);

@@ -1,6 +1,9 @@
 const fs = require("fs");
 const puppeteer = require("puppeteer");
+const { postSlackMessage } = require("../slackAlarmbot");
 
+// firstCate : string,
+// secondCate ?: string,
 // keyword: string,
 // // 경쟁률
 // comp: string,
@@ -16,11 +19,70 @@ const puppeteer = require("puppeteer");
 // prodPrcAvg: string,
 
 // type Result = {
-//     categoryNm: string,
-//     keywords: ExtractTable[],
+//     date: string,
+//     res: [],
 // };
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+const extractFirstCateNm = async (page) => {
+    const firstCate = await page.evaluate(() => {
+        const firstCrumb = document.querySelector(
+            "#content > div > div.location-area.has-line > nav > ol > li:nth-child(1)"
+        )?.textContent;
+
+        return firstCrumb || "";
+    });
+
+    return firstCate || null;
+};
+
+const extractSecondCateNm = async (page) => {
+    const secondCate = await page.evaluate(() => {
+        const secondCrumb = document.querySelector(
+            "#content > div > div.location-area.has-line > nav > ol > li:nth-child(2)"
+        )?.textContent;
+
+        return secondCrumb;
+    });
+
+    return secondCate || null;
+};
+
+// 키워드 테이블 추출
+const extractKwTable = async (page) => {
+    const extractTable = await page.evaluate(() => {
+        const firstCate = document.querySelector(
+            "#content > div > div.location-area.has-line > nav > ol > li:nth-child(1)"
+        )?.textContent;
+        const secondCate = document.querySelector(
+            "#content > div > div.location-area.has-line > nav > ol > li:nth-child(2)"
+        )?.textContent;
+
+        const keywordTable = document.querySelectorAll(
+            "#datatable > tbody > tr"
+        );
+        let table = [];
+        for (const tr of keywordTable) {
+            const extract = tr.innerText.split("\t");
+            const obj = {
+                firstCate,
+                secondCate,
+                keyword: extract[0],
+                comp: extract[1],
+                cvr: extract[2],
+                bid: extract[3],
+                searchCnt: extract[4],
+                prodCnt: extract[5],
+                prodPrcAvg: extract[6],
+            };
+            table.push(obj);
+        }
+        return table;
+    });
+
+    return extractTable;
+};
 
 const scrapLaunch = async () => {
     const TARGET_URL = "https://pandarank.net/search";
@@ -45,7 +107,11 @@ const scrapLaunch = async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await pageWithoutAssets(page);
+
+    let scrapTime = 0;
     try {
+        const startTime = new Date().getTime();
+        console.time("크롤 시간 측정");
         console.log("시작합니다.");
         await page.setExtraHTTPHeaders({
             "user-agent":
@@ -63,6 +129,12 @@ const scrapLaunch = async () => {
 
         await page.waitForSelector("#select1 > div > div");
 
+        // 황금 키워드 클릭
+        await page.click(
+            "#content > div > div.table-top.d-none.d-lg-block.has-line > div > div > div > button.btn.btn-sm.btn-outline-default.change-gold"
+        );
+        console.log("황금 키워드 클릭");
+
         // 숫자로 보기 클릭
         await page.click(
             "#content > div > div.table-top.d-none.d-lg-block.has-line > div > div > div > button.btn.btn-sm.btn-outline-default.change-num"
@@ -75,12 +147,18 @@ const scrapLaunch = async () => {
         });
 
         for (let i = 1; i <= categoryOneLen; i++) {
-            // 1차 카테고리 선택
+            // 1차 카테고리 선택 후 크롤
             await page.click(`#select1 > div > div > div:nth-child(${i}) > a`);
+            await sleep(1000);
 
+            const firstCate = await extractFirstCateNm(page);
+            const keywords = await extractKwTable(page);
             await sleep(100);
+            console.log(`${firstCate} 추출 완료`);
 
-            // 2차 카테고리 선택
+            res.push(keywords);
+
+            // 2차 카테고리 선택 후 크롤
             categoryTwoLen = await page.evaluate(() => {
                 const categoryTwo = document.querySelector(
                     "#select2 > div > div"
@@ -92,66 +170,54 @@ const scrapLaunch = async () => {
                 await page.click(
                     `#select2 > div > div > div:nth-child(${j}) > a`
                 );
-
                 await sleep(1000);
 
-                // 카테고리 이름 출력
-                let categoryNm = await page.evaluate(() => {
-                    const firstCrumb = document.querySelector(
-                        "#content > div > div.location-area.has-line > nav > ol > li:nth-child(1)"
-                    )?.textContent;
-                    const secondCrumb = document.querySelector(
-                        "#content > div > div.location-area.has-line > nav > ol > li:nth-child(2)"
-                    )?.textContent;
+                const secondCate = await extractSecondCateNm(page);
+                const keywords = await extractKwTable(page);
+                console.log(`${firstCate} > ${secondCate} 추출 완료`);
 
-                    const breadCrumb =
-                        firstCrumb && secondCrumb
-                            ? `${firstCrumb} > ${secondCrumb}`
-                            : "알수없음";
-
-                    return breadCrumb;
-                });
-
-                const extractTable = await page.evaluate(() => {
-                    const keywordTable = document.querySelectorAll(
-                        "#datatable > tbody > tr"
-                    );
-
-                    let table = [];
-                    for (const tr of keywordTable) {
-                        const extract = tr.innerText.split("\t");
-                        const obj = {
-                            categoryNm: categoryNm.split(">")[1],
-                            keyword: extract[0],
-                            comp: extract[1],
-                            cvr: extract[2],
-                            bid: extract[3],
-                            searchCnt: extract[4],
-                            prodCnt: extract[5],
-                            prodPrcAvg: extract[6],
-                        };
-                        table.push(obj);
-                    }
-                    return table;
-                });
-
-                console.log(`${categoryNm} 추출 완료`);
-
-                res.push({
-                    categoryNm: categoryNm.split(">")[0],
-                    keywords: extractTable,
-                });
+                res.push(keywords);
             }
         }
+        console.timeEnd("크롤 시간 측정");
+        const endTime = new Date().getTime();
+
+        new Promise(() => {
+            fs.writeFile(
+                "./lib/kw.json",
+                JSON.stringify({
+                    date: new Date().toLocaleDateString(),
+                    res: res[0],
+                }),
+                function (err) {
+                    if (err) {
+                        console.log("에러발생");
+                        throw new Error("올바르게 파일을 생성하지 못했습니다.");
+                    }
+                }
+            );
+        })
+            .then(() => {
+                postSlackMessage(
+                    "개발",
+                    `${new Date().toLocaleDateString()}자 황금 키워드 추출 완료 ${
+                        (endTime - startTime) / 1000
+                    }초 소요`
+                );
+            })
+            .catch(() => {
+                postSlackMessage(
+                    "개발",
+                    `${new Date().toLocaleDateString()}자 황금 키워드 추출 실패 `
+                );
+            });
     } catch (err) {
         console.log(err);
+        postSlackMessage(
+            "개발",
+            `${new Date().toLocaleDateString()}자 황금 키워드 추출 실패 `
+        );
     } finally {
-        fs.writeFile("./lib/kw.json", JSON.stringify(res), function (err) {
-            if (err) {
-                console.log("에러발생");
-                return;
-            }
-        });
         await browser.close();
     }
 };
