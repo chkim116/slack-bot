@@ -181,7 +181,7 @@ const scrapLaunch = async () => {
                     } else {
                         return { ...lst, isNew: false };
                     }
-                }),
+                })[0],
             ];
 
             // 누른 필터 삭제
@@ -221,7 +221,7 @@ const scrapLaunch = async () => {
                         } else {
                             return { ...lst, isNew: false };
                         }
-                    }),
+                    })[0],
                 ];
 
                 // 눌려있던 필터 삭제
@@ -249,7 +249,11 @@ const scrapLaunch = async () => {
             `${new Date().toLocaleDateString()}자 황금 키워드 추출 완료 ${(
                 (endTime - startTime) /
                 1000
-            ).toFixed()}초 소요`
+            ).toFixed()}초 소요. 황금키워드는 총 ${
+                res.length
+            }개, 전날 없던 키워드는 ${
+                res.filter((lst) => lst.isNew).length
+            }개 입니다.`
         );
     } catch (err) {
         console.log(err);
