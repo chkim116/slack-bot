@@ -25,6 +25,20 @@ const { postSlackMessage } = require("../slackAlarmbot");
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
+// 전날 없던 키워드 클릭
+const newKwList = async (page) => {
+    await page.click(
+        "#content > div > div.table-top.d-none.d-lg-block.has-line > div > div > div > button.btn.btn-sm.btn-outline-default.filtered"
+    );
+    await sleep(50);
+
+    await page.click("#chk");
+
+    await page.click(
+        "#modal-search-filter > div > div > div.modal-footer.p-0 > button"
+    );
+};
+
 const extractFirstCateNm = async (page) => {
     const firstCate = await page.evaluate(() => {
         const firstCrumb = document.querySelector(
@@ -153,9 +167,25 @@ const scrapLaunch = async () => {
             const firstCate = await extractFirstCateNm(page);
             const keywords = await extractKwTable(page);
             await sleep(100);
-            console.log(`${firstCate} 추출 완료`);
 
-            res = [...res, keywords[0]];
+            await newKwList(page);
+            await sleep(1000);
+            const newKeywords = await extractKwTable(page);
+            await sleep(100);
+
+            res = [
+                ...res,
+                keywords.map((lst) => {
+                    if (newKeywords.find((kw) => kw.keyword === lst.keyword)) {
+                        return { ...lst, isNew: true };
+                    } else {
+                        return { ...lst, isNew: false };
+                    }
+                }),
+            ];
+
+            // 누른 필터 삭제
+            await newKwList(page);
 
             // 2차 카테고리 선택 후 크롤
             categoryTwoLen = await page.evaluate(() => {
@@ -175,7 +205,27 @@ const scrapLaunch = async () => {
                 const keywords = await extractKwTable(page);
                 console.log(`${firstCate} > ${secondCate} 추출 완료`);
 
-                res = [...res, keywords[0]];
+                // 필터 다시 누름
+                await newKwList(page);
+                await sleep(1000);
+                const newKeywords = await extractKwTable(page);
+                await sleep(100);
+
+                res = [
+                    ...res,
+                    keywords.map((lst) => {
+                        if (
+                            newKeywords.find((kw) => kw.keyword === lst.keyword)
+                        ) {
+                            return { ...lst, isNew: true };
+                        } else {
+                            return { ...lst, isNew: false };
+                        }
+                    }),
+                ];
+
+                // 눌려있던 필터 삭제
+                await newKwList(page);
             }
         }
         console.timeEnd("크롤 시간 측정");
@@ -215,5 +265,3 @@ const scrapLaunch = async () => {
 module.exports = {
     scrapLaunch,
 };
-
-scrapLaunch();
