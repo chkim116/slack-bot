@@ -2,9 +2,6 @@
     "name": "early21-slack",
     "version": "0.0.1",
     "description": "얼리21의 슬랙 앱",
-    "engines": {
-        "node": "14.x"
-    },
     "main": "index.js",
     "scripts": {
         "dev": "nodemon -w index.js",
@@ -21,6 +18,7 @@
         "express": "^4.15.2",
         "morgan": "1.10.0",
         "node-cron": "3.0.0",
+        "node-schedule": "2.1.0",
         "nodemon": "2.0.12",
         "puppeteer": "10.2.0",
         "slack-node": "0.1.8"

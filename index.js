@@ -1,7 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const http = require("http");
-const cron = require("node-cron");
+const nodeSchedule = require("node-schedule");
 const { workEnd, workStart } = require("./slackSlashbot");
 const { scrapLaunch } = require("./scrap");
 const cors = require("cors");
@@ -38,7 +38,7 @@ app.listen(PORT, () =>
     )
 );
 
-cron.schedule("0 30 22 * * *", function () {
+nodeSchedule.scheduleJob("0 15 22 * * *", function () {
     scrapLaunch();
 });
 
