@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "nodemon -w index.js",
         "start": "node index.js",
-        "test": "node test.js"
+        "test": "node test.js",
+        "scrap": "node ./scrap.js"
     },
     "dependencies": {
         "@slack/client": "5.0.2",

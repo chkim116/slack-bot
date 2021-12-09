@@ -279,5 +279,3 @@ const scrapLaunch = async () => {
 module.exports = {
     scrapLaunch,
 };
-
-scrapLaunch();
